@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#12141d" />
+    <meta
+      name="vibeload-api-url"
+      content="https://vibeload-api-isaacfirmino.onrender.com"
+    />
+    <meta
+      name="description"
+      content="Prepare links de mídia em vídeo ou áudio e escolha a qualidade ideal para o seu dispositivo."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="VibeLoad" />
+    <meta property="og:title" content="VibeLoad | Vídeos e músicas no seu ritmo" />
+    <meta
+      property="og:description"
+      content="Prepare links de mídia em vídeo ou áudio e escolha a qualidade ideal para o seu dispositivo."
+    />
+    <meta
+      property="og:image"
+      content="https://isaacfirmino.github.io/VibeLoad/public/og.png"
+    />
+    <title>VibeLoad | Vídeos e músicas no seu ritmo</title>
+    <link rel="icon" href="./public/vibeload-mark.svg" type="image/svg+xml" />
+    <link rel="preload" href="./public/hero-editorial.png" as="image" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./script.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header class="site-header">
+        <nav class="nav-v2" aria-label="Navegação principal">
+          <a href="#top" aria-label="VibeLoad, início">
+            <span class="brand-v2">
+              <span class="brand-v2-mark">
+                <img src="./public/vibeload-mark.svg" alt="" width="40" height="40" />
+              </span>
+              <span>Vibe<strong>Load</strong></span>
+            </span>
+          </a>
+          <div class="nav-v2-links">
+            <a href="#como-funciona">Como funciona</a>
+            <a href="#recursos">Recursos</a>
+            <a href="#faq">Dúvidas</a>
+          </div>
+        </nav>
+      </header>
+
+      <section class="hero-v2" id="top">
+        <div class="hero-v2-copy">
+          <h1>
+            <span>Salve o que você quer.</span>
+            <span>Ouça quando quiser.</span>
+          </h1>
+          <p>
+            Cole o link, escolha vídeo ou áudio e prepare o arquivo na qualidade certa para cada momento.
+          </p>
+          <div class="hero-v2-actions">
+            <a class="rainbow-button" href="#converter"><span>Baixar agora</span></a>
+            <a class="button-secondary" href="#como-funciona">Como funciona</a>
+          </div>
+        </div>
+        <figure class="hero-v2-media">
+          <img
+            src="./public/hero-editorial.png"
+            alt="Smartphone e fones de ouvido em uma composição de estúdio"
+            width="1152"
+            height="1536"
+          />
+        </figure>
+      </section>
+
+      <section class="platform-rail reveal" aria-labelledby="platform-title">
+        <h2 class="sr-only" id="platform-title">Plataformas preparadas para integração</h2>
+        <p>Preparado para links de</p>
+        <div class="platform-logos">
+          <img src="https://cdn.simpleicons.org/youtube/6f7485" alt="YouTube" width="34" height="34" loading="lazy" />
+          <img src="https://cdn.simpleicons.org/instagram/6f7485" alt="Instagram" width="34" height="34" loading="lazy" />
+          <img src="https://cdn.simpleicons.org/tiktok/6f7485" alt="TikTok" width="34" height="34" loading="lazy" />
+          <img src="https://cdn.simpleicons.org/facebook/6f7485" alt="Facebook" width="34" height="34" loading="lazy" />
+        </div>
+      </section>
+
+      <section class="converter-section reveal" id="converter">
+        <div class="section-copy-stack">
+          <h2>Um campo. Todas as escolhas.</h2>
+          <p>Analise o link, escolha o formato e prepare o arquivo sem sair da página.</p>
+        </div>
+
+        <div class="workbench" aria-live="polite">
+          <form class="workbench-form" id="converter-form" novalidate>
+            <label for="media-link">Link do vídeo ou áudio</label>
+            <div class="workbench-form-row">
+              <input
+                id="media-link"
+                name="media-link"
+                type="url"
+                inputmode="url"
+                placeholder="https://"
+                aria-describedby="media-link-help media-link-error"
+              />
+              <button class="rainbow-button rainbow-button-tall" id="analyze-button" type="submit">
+                <span>Analisar link</span>
+              </button>
+            </div>
+            <p id="media-link-help" class="workbench-help">
+              Use conteúdo próprio, autorizado ou em domínio público.
+            </p>
+            <label class="rights-confirmation" for="rights-confirmation">
+              <input id="rights-confirmation" type="checkbox" required />
+              <span>Confirmo que tenho autorização para processar este conteúdo.</span>
+            </label>
+            <p id="media-link-error" class="workbench-error" role="alert" hidden>
+              Insira um endereço válido começando com http:// ou https://
+            </p>
+          </form>
+
+          <div class="workbench-result">
+            <div class="result-empty" id="result-empty">
+              <strong>Seu arquivo começa com um link.</strong>
+              <p>Depois da análise, as opções de formato e qualidade aparecem aqui.</p>
+            </div>
+
+            <div class="result-loading" id="result-loading" aria-label="Analisando mídia" hidden>
+              <span class="skeleton-line skeleton-wide"></span>
+              <span class="skeleton-line skeleton-short"></span>
+              <div class="skeleton-options"><span></span><span></span><span></span></div>
+            </div>
+
+            <div class="result-ready" id="result-ready" hidden>
+              <div class="result-heading">
+                <div>
+                  <span>Fonte</span>
+                  <strong id="result-source">link de mídia</strong>
+                </div>
+                <div class="media-switch" aria-label="Tipo de arquivo">
+                  <button type="button" data-media-type="video" aria-pressed="true">Vídeo</button>
+                  <button type="button" data-media-type="audio" aria-pressed="false">Áudio</button>
+                </div>
+              </div>
+
+              <div class="quality-options" id="quality-options" aria-label="Qualidade"></div>
+
+              <button class="rainbow-button rainbow-button-tall download-action" id="download-button" type="button">
+                <span>Baixar agora</span>
+              </button>
+              <p class="download-notice" id="download-notice" role="status" hidden></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workflow-section reveal" id="como-funciona">
+        <div class="section-copy-stack">
+          <h2>Do link ao arquivo, sem desvio.</h2>
+          <p>O processo foi reduzido ao que realmente importa.</p>
+        </div>
+        <div class="workflow-lane">
+          <article>
+            <span>Link</span>
+            <div><h3>Cole</h3><p>Copie o endereço da mídia na plataforma de origem.</p></div>
+          </article>
+          <article>
+            <span>Formato</span>
+            <div><h3>Escolha</h3><p>Defina vídeo, áudio e a qualidade adequada.</p></div>
+          </article>
+          <article>
+            <span>Arquivo</span>
+            <div><h3>Baixe</h3><p>Confirme a opção e salve no seu dispositivo.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="formats-section reveal" id="formatos" aria-labelledby="formats-title">
+        <div class="section-copy-stack">
+          <h2 id="formats-title">Qualidade para cada contexto.</h2>
+          <p>Escolha definição, compatibilidade ou tamanho de arquivo.</p>
+        </div>
+        <div class="format-track">
+          <article class="format-poster format-poster-accent"><strong>4K</strong><span>MP4 para telas grandes</span></article>
+          <article class="format-poster"><strong>1080p</strong><span>Equilíbrio para vídeo</span></article>
+          <article class="format-poster format-poster-soft"><strong>320 kbps</strong><span>MP3 para ouvir com detalhe</span></article>
+          <article class="format-poster"><strong>M4A</strong><span>Áudio leve e compatível</span></article>
+        </div>
+      </section>
+
+      <section class="resources-section reveal" id="recursos">
+        <div class="section-copy-stack">
+          <h2>O essencial, bem resolvido.</h2>
+          <p>Recursos claros para quem quer decidir rápido e seguir com o dia.</p>
+        </div>
+        <div class="resource-bento">
+          <article class="resource-audio">
+            <img
+              src="./public/audio-editorial.png"
+              alt="Fones de ouvido em uma composição de estúdio"
+              width="1536"
+              height="1024"
+              loading="lazy"
+            />
+            <div><h3>Áudio com presença</h3><p>Bitrates para ouvir no fone, no carro ou em caixas maiores.</p></div>
+          </article>
+          <article class="resource-quality"><strong>4K</strong><h3>Imagem preservada</h3><p>Resoluções para diferentes telas e conexões.</p></article>
+          <article class="resource-private"><h3>Sem cadastro obrigatório</h3><p>O fluxo começa pelo link, não por um perfil.</p></article>
+          <article class="resource-device"><strong>PC<br />iOS<br />Android</strong><p>Uma experiência adaptada para qualquer tela.</p></article>
+          <article class="resource-direct"><h3>Direto no navegador</h3><p>Nada para instalar antes de começar.</p></article>
+        </div>
+      </section>
+
+      <section class="offline-section reveal">
+        <figure>
+          <img
+            src="./public/offline-editorial.png"
+            alt="Pessoa ouvindo mídia salva durante uma viagem de trem"
+            width="1792"
+            height="1024"
+            loading="lazy"
+          />
+        </figure>
+        <div class="offline-caption">
+          <h2>Seu ritmo continua offline.</h2>
+          <p>Prepare vídeos e músicas para ouvir quando a conexão não acompanhar você.</p>
+        </div>
+      </section>
+
+      <section class="faq-section reveal" id="faq">
+        <div class="faq-title">
+          <h2>Perguntas antes do primeiro link.</h2>
+          <p>Respostas diretas sobre uso, formatos e funcionamento.</p>
+        </div>
+        <div class="faq-grid">
+          <details open>
+            <summary>Preciso instalar algum programa?</summary>
+            <p>Não. A experiência foi desenhada para funcionar direto no navegador.</p>
+          </details>
+          <details>
+            <summary>Quais formatos estarão disponíveis?</summary>
+            <p>O fluxo prevê MP4 para vídeo e MP3 ou M4A para áudio.</p>
+          </details>
+          <details>
+            <summary>Funciona no celular?</summary>
+            <p>Sim. A página se adapta a computadores, tablets e celulares.</p>
+          </details>
+          <details>
+            <summary>Posso baixar qualquer conteúdo?</summary>
+            <p>Use apenas mídia própria, autorizada ou em domínio público.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="final-cta reveal">
+        <h2>Um link é o bastante.</h2>
+        <p>Escolha o formato certo para o momento certo.</p>
+        <a class="rainbow-button" href="#formatos"><span>Ver formatos</span></a>
+      </section>
+
+      <footer class="footer-v2">
+        <div class="footer-v2-brand">
+          <span class="brand-v2">
+            <span class="brand-v2-mark">
+              <img src="./public/vibeload-mark.svg" alt="" width="40" height="40" loading="lazy" />
+            </span>
+            <span>Vibe<strong>Load</strong></span>
+          </span>
+          <p>Sua mídia, no seu ritmo.</p>
+        </div>
+        <div class="footer-v2-links">
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#recursos">Recursos</a>
+          <a href="#faq">Dúvidas</a>
+        </div>
+        <p class="footer-v2-legal">
+          Baixe somente conteúdo próprio, autorizado ou em domínio público.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

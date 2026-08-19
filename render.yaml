@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: vibeload-api-isaacfirmino
+    runtime: docker
+    plan: free
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: ./api
+    healthCheckPath: /health
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://isaacfirmino.github.io,http://127.0.0.1:4173,http://localhost:4173
+      - key: MAX_SOURCE_BYTES
+        value: "262144000"
+      - key: MAX_CONCURRENT_JOBS
+        value: "1"
+      - key: JOB_TTL_MS
+        value: "900000"
