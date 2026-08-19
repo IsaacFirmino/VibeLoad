@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { RainbowLink } from "@/components/ui/rainbow-button";
 import { ConverterWorkbench } from "./components/ConverterWorkbench";
 
 const platforms = [
@@ -12,7 +13,7 @@ function Brand() {
   return (
     <span className="brand-v2">
       <span className="brand-v2-mark">
-        <Image src="/vibeload-logo.png" alt="" fill sizes="38px" />
+        <Image src="/vibeload-mark.svg" alt="" width={40} height={40} sizes="40px" />
       </span>
       <span>Vibe<strong>Load</strong></span>
     </span>
@@ -38,7 +39,7 @@ export default function Home() {
           <h1><span>Salve o que você quer.</span><span>Ouça quando quiser.</span></h1>
           <p>Cole o link, escolha vídeo ou áudio e baixe na qualidade certa para cada momento.</p>
           <div className="hero-v2-actions">
-            <a className="button-primary" href="#converter">Baixar agora</a>
+            <RainbowLink className="h-[52px] px-[22px]" href="#converter">Baixar agora</RainbowLink>
             <a className="button-secondary" href="#como-funciona">Como funciona</a>
           </div>
         </div>
@@ -163,7 +164,7 @@ export default function Home() {
       <section className="final-cta reveal">
         <h2>Um link é o bastante.</h2>
         <p>Escolha o formato certo para o momento certo.</p>
-        <a className="button-primary" href="#formatos">Ver formatos</a>
+        <RainbowLink className="h-[52px] px-[22px]" href="#formatos">Ver formatos</RainbowLink>
       </section>
 
       <footer className="footer-v2">

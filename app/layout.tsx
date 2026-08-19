@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: baseUrl,
     title,
     description,
-    icons: { icon: "/vibeload-logo.png", shortcut: "/vibeload-logo.png" },
+    icons: { icon: "/vibeload-mark.svg", shortcut: "/vibeload-mark.svg" },
     openGraph: {
       title,
       description,

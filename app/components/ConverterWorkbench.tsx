@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { RainbowButton } from "@/components/ui/rainbow-button";
 
 type MediaType = "video" | "audio";
 type AnalysisStatus = "idle" | "loading" | "ready" | "error";
@@ -81,9 +82,9 @@ export function ConverterWorkbench() {
             aria-describedby="media-link-help media-link-error"
             aria-invalid={status === "error"}
           />
-          <button type="submit" disabled={status === "loading"}>
+          <RainbowButton className="h-14 px-[18px]" type="submit" disabled={status === "loading"}>
             {status === "loading" ? "Analisando" : "Analisar link"}
-          </button>
+          </RainbowButton>
         </div>
         <p id="media-link-help" className="workbench-help">Use conteúdo próprio, autorizado ou em domínio público.</p>
         {status === "error" && <p id="media-link-error" className="workbench-error" role="alert">Insira um endereço válido começando com http:// ou https://</p>}
@@ -133,7 +134,7 @@ export function ConverterWorkbench() {
               ))}
             </div>
 
-            <button className="download-action" type="button" onClick={prepareDownload}>Baixar agora</button>
+            <RainbowButton className="download-action h-14 px-[18px]" type="button" onClick={prepareDownload}>Baixar agora</RainbowButton>
             {notice && <p className="download-notice" role="status">{notice}</p>}
           </div>
         ) : null}

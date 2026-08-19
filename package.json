@@ -7,16 +7,20 @@
   },
   "scripts": {
     "dev": "vinext dev",
+    "dev:static": "vite --config vite.static.config.mjs",
     "build": "vinext build",
     "start": "vinext start",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "npm run build && npm --prefix api test && node --test tests/rendered-html.test.mjs tests/static-site.test.mjs",
+    "test:static": "node --test tests/static-site.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "drizzle-orm": "0.45.2",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
