@@ -16,7 +16,7 @@ after(async () => {
 test("reports service health", async () => {
   const response = await app.inject({ method: "GET", url: "/health" });
   assert.equal(response.statusCode, 200);
-  assert.deepEqual(response.json(), { status: "ok" });
+  assert.deepEqual(response.json(), { status: "ok", revision: "local" });
 });
 
 test("requires explicit rights confirmation", async () => {

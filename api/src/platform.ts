@@ -18,6 +18,13 @@ const supportedPlatforms: SupportedPlatform[] = [
   { name: "Facebook", domains: ["facebook.com", "fb.watch"] },
 ];
 
+const youtubeRuntimeArgs = [
+  "--js-runtimes",
+  "node",
+  "--remote-components",
+  "ejs:github",
+];
+
 function matchesDomain(hostname: string, domain: string) {
   return hostname === domain || hostname.endsWith(`.${domain}`);
 }
@@ -72,12 +79,19 @@ async function runYtDlp(args: string[], timeoutMs: number) {
       }
 
       const isUnavailable = /unsupported url/i.test(stderr);
+      const isAccessRestricted = /sign in to confirm|not a bot|cookies/i.test(stderr);
       finish(new ApiError(
         isUnavailable
           ? "Este endereço ainda não é compatível com o conector de plataformas."
+          : isAccessRestricted
+            ? "A plataforma recusou temporariamente o servidor. Tente novamente mais tarde."
           : "A plataforma não liberou esta mídia para processamento.",
         422,
-        isUnavailable ? "UNSUPPORTED_PLATFORM_URL" : "PLATFORM_REJECTED",
+        isUnavailable
+          ? "UNSUPPORTED_PLATFORM_URL"
+          : isAccessRestricted
+            ? "PLATFORM_ACCESS_RESTRICTED"
+            : "PLATFORM_REJECTED",
       ));
     });
   });
@@ -89,6 +103,7 @@ export async function inspectPlatformMedia(value: string) {
   if (!platform) return null;
 
   const output = await runYtDlp([
+    ...youtubeRuntimeArgs,
     "--dump-single-json",
     "--skip-download",
     "--no-playlist",
@@ -138,6 +153,7 @@ export async function downloadPlatformMedia(value: string, destination: string) 
   const outputTemplate = join(directory, `${outputPrefix}.%(ext)s`);
 
   await runYtDlp([
+    ...youtubeRuntimeArgs,
     "--no-playlist",
     "--no-warnings",
     "--no-progress",

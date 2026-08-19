@@ -188,7 +188,10 @@ export async function buildApp(options: { logger?: boolean } = {}) {
     policy: "Somente conteúdo próprio, autorizado ou em domínio público.",
   }));
 
-  app.get("/health", async () => ({ status: "ok" }));
+  app.get("/health", async () => ({
+    status: "ok",
+    revision: process.env.RENDER_GIT_COMMIT?.slice(0, 7) ?? "local",
+  }));
 
   app.post<{ Body: AnalyzeBody }>("/api/analyze", async (request) => {
     requireRightsConsent(request.body?.consent);
