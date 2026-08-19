@@ -54,7 +54,6 @@ jobs:
           jq --exit-status '.source and .formats.video and .formats.audio' "$body_file"
 
       - name: Verificar conector do YouTube
-        continue-on-error: true
         shell: bash
         run: |
           body_file="$(mktemp)"
@@ -67,12 +66,39 @@ jobs:
             "$API_URL/api/analyze")"
 
           cat "$body_file"
-          if test "$status" != "200"; then
-            echo "::warning::O YouTube recusou o IP do Render com HTTP $status. O fluxo de arquivos autorizados continuará sendo testado."
-            exit 1
-          fi
-
+          test "$status" = "200"
           jq --exit-status '.source == "YouTube"' "$body_file"
+
+      - name: Verificar download do YouTube
+        shell: bash
+        run: |
+          created="$(curl --fail --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data '{"url":"https://www.youtube.com/watch?v=BaW_jenozKc","mediaType":"audio","quality":"128 kbps","consent":true}' \
+            "$API_URL/api/jobs")"
+          job_id="$(jq --raw-output '.job.id' <<<"$created")"
+
+          for attempt in {1..120}; do
+            job_payload="$(curl --fail --silent --show-error "$API_URL/api/jobs/$job_id")"
+            job_status="$(jq --raw-output '.job.status' <<<"$job_payload")"
+
+            if test "$job_status" = "ready"; then
+              download_url="$(jq --raw-output '.job.downloadUrl' <<<"$job_payload")"
+              curl --fail --silent --show-error --output youtube-smoke.m4a "$API_URL$download_url"
+              test -s youtube-smoke.m4a
+              exit 0
+            fi
+
+            if test "$job_status" = "failed"; then
+              jq '.job' <<<"$job_payload"
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          exit 1
 
       - name: Verificar conversão e download
         shell: bash

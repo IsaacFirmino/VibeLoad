@@ -24,7 +24,7 @@ const youtubeRuntimeArgs = [
   "--remote-components",
   "ejs:github",
   "--extractor-args",
-  "youtube:player_client=web_embedded",
+  "youtube:player_client=android_vr",
 ];
 
 function matchesDomain(hostname: string, domain: string) {
