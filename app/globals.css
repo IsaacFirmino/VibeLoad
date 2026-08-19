@@ -101,12 +101,20 @@ img { max-width: 100%; }
 .workbench { padding: 18px; display: grid; grid-template-columns: .88fr 1.12fr; gap: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-soft); }
 .workbench-form, .workbench-result { min-height: 340px; padding: 28px; border-radius: 16px; background: var(--surface); }
 .workbench-form { display: flex; flex-direction: column; justify-content: center; }
+.source-switch { width: fit-content; margin: 0 0 20px; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
+.source-switch button { min-width: 112px; min-height: 38px; padding: 0 14px; border: 0; border-radius: 9px; background: transparent; color: var(--text-muted); font: inherit; font-size: 13px; font-weight: 720; cursor: pointer; }
+.source-switch button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 4px 16px rgb(17 19 29 / 8%); }
 .workbench-form label { margin-bottom: 10px; color: var(--text); font-size: 13px; font-weight: 720; }
 .workbench-form-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
 .workbench-form input { min-width: 0; height: 56px; padding: 0 15px; border: 1px solid var(--line); border-radius: 12px; outline: 0; background: var(--page); color: var(--text); }
 .workbench-form input::placeholder { color: var(--text-muted); opacity: 1; }
 .workbench-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent); }
 .workbench-form input[aria-invalid="true"] { border-color: var(--danger); }
+.upload-field { position: relative; min-height: 116px; margin: 0 !important; padding: 18px; display: flex; align-items: center; border: 1px dashed color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--accent-soft) 38%, var(--page)); cursor: pointer; }
+.upload-field:hover, .upload-field:focus-within { border-color: var(--accent); background: var(--accent-soft); }
+.upload-field input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.upload-field-copy { width: 100%; margin: 0 !important; display: grid; gap: 6px; cursor: pointer; }.upload-field-copy strong { color: var(--text); font-size: 15px; }.upload-field-copy small { color: var(--text-muted); font-size: 12px; font-weight: 520; }
+.selected-file { margin: 10px 0 0; overflow: hidden; color: var(--text-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }.upload-prepare { width: 100%; margin-top: 14px; }
 .workbench-form button:disabled { cursor: wait; opacity: .7; }
 .workbench-help, .workbench-error { margin: 10px 0 0; font-size: 12px; line-height: 1.45; }
 .workbench-help { color: var(--text-muted); }

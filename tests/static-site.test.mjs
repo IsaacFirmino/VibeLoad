@@ -18,6 +18,8 @@ test("provides a complete static GitHub Pages entrypoint", async () => {
   assert.match(html, /src="\.\/script\.js"/);
   assert.match(html, /id="converter-form"/);
   assert.match(html, /id="rights-confirmation"/);
+  assert.match(html, /id="media-file"/);
+  assert.match(html, /id="source-upload-button"/);
   assert.match(html, /name="vibeload-api-url"/);
   assert.match(html, /public\/vibeload-mark\.svg/);
   assert.doesNotMatch(html, /public\/vibeload-logo\.png/);
@@ -45,6 +47,8 @@ test("ships the converter interaction and rainbow styling without a framework ru
   assert.match(script, /form\.addEventListener\("submit"/);
   assert.match(script, /apiRequest\("\/api\/analyze"/);
   assert.match(script, /apiRequest\("\/api\/jobs"/);
+  assert.match(script, /apiRequest\(`\/api\/uploads\?\$\{query\}`/);
+  assert.match(script, /new FormData\(\)/);
   assert.match(script, /renderQualityOptions\(\)/);
   assert.match(script, /IntersectionObserver/);
 });

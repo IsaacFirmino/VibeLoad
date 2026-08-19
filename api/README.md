@@ -1,6 +1,6 @@
 # VibeLoad API
 
-API Node.js e TypeScript para converter arquivos de mídia próprios, autorizados ou em domínio público. Aceita arquivos diretos e links públicos do YouTube, Instagram, TikTok e Facebook, sem contornar DRM ou autenticação.
+API Node.js e TypeScript para converter arquivos de mídia próprios, autorizados ou em domínio público. Aceita upload local, arquivos diretos e links públicos compatíveis, sem contornar DRM ou autenticação.
 
 ## Desenvolvimento local
 
@@ -25,9 +25,12 @@ A API ficará disponível em `http://localhost:8787`.
 - `GET /health`
 - `POST /api/analyze`
 - `POST /api/jobs`
+- `POST /api/uploads?mediaType=audio&quality=128%20kbps&consent=true`
 - `GET /api/jobs/:id`
 - `GET /api/jobs/:id/download`
 - `DELETE /api/jobs/:id`
+
+O endpoint de upload recebe um único campo multipart chamado `file`. O limite padrão é 100 MB e o arquivo temporário é removido depois da conversão ou da expiração do trabalho.
 
 As solicitações de análise e conversão precisam enviar `consent: true`.
 

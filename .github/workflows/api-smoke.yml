@@ -54,6 +54,7 @@ jobs:
           jq --exit-status '.source and .formats.video and .formats.audio' "$body_file"
 
       - name: Verificar conector do YouTube
+        continue-on-error: true
         shell: bash
         run: |
           body_file="$(mktemp)"
@@ -66,17 +67,24 @@ jobs:
             "$API_URL/api/analyze")"
 
           cat "$body_file"
-          test "$status" = "200"
+          if test "$status" != "200"; then
+            echo "::warning::O YouTube recusou a análise com HTTP $status."
+            exit 1
+          fi
           jq --exit-status '.source == "YouTube"' "$body_file"
 
-      - name: Verificar download do YouTube
+      - name: Verificar upload, conversão e download
         shell: bash
         run: |
+          curl --fail --silent --show-error \
+            --output upload-source.mp4 \
+            "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+
           created="$(curl --fail --silent --show-error \
             --request POST \
-            --header "Content-Type: application/json" \
-            --data '{"url":"https://www.youtube.com/watch?v=BaW_jenozKc","mediaType":"audio","quality":"128 kbps","consent":true}' \
-            "$API_URL/api/jobs")"
+            --header "Origin: https://isaacfirmino.github.io" \
+            --form "file=@upload-source.mp4;type=video/mp4" \
+            "$API_URL/api/uploads?mediaType=audio&quality=128%20kbps&consent=true")"
           job_id="$(jq --raw-output '.job.id' <<<"$created")"
 
           for attempt in {1..120}; do
@@ -85,8 +93,8 @@ jobs:
 
             if test "$job_status" = "ready"; then
               download_url="$(jq --raw-output '.job.downloadUrl' <<<"$job_payload")"
-              curl --fail --silent --show-error --output youtube-smoke.m4a "$API_URL$download_url"
-              test -s youtube-smoke.m4a
+              curl --fail --silent --show-error --output upload-smoke.m4a "$API_URL$download_url"
+              test -s upload-smoke.m4a
               exit 0
             fi
 

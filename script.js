@@ -16,15 +16,27 @@ const formats = {
 };
 
 const state = {
+  sourceMode: "link",
   mediaType: "video",
   selected: "1080p",
   sourceUrl: "",
+  sourceFile: null,
 };
+
+const maxUploadBytes = 100 * 1024 * 1024;
+const allowedUploadExtensions = new Set([
+  "aac", "flac", "m4a", "mkv", "mov", "mp3", "mp4", "mpeg", "ogg", "opus", "wav", "webm",
+]);
 
 const apiMeta = document.querySelector('meta[name="vibeload-api-url"]');
 const apiBaseUrl = (apiMeta?.content ?? "").trim().replace(/\/$/, "");
 const form = document.querySelector("#converter-form");
 const input = document.querySelector("#media-link");
+const fileInput = document.querySelector("#media-file");
+const linkSourcePanel = document.querySelector("#link-source-panel");
+const uploadSourcePanel = document.querySelector("#upload-source-panel");
+const sourceModeButtons = document.querySelectorAll("[data-source-mode]");
+const selectedFile = document.querySelector("#selected-file");
 const rightsConfirmation = document.querySelector("#rights-confirmation");
 const errorMessage = document.querySelector("#media-link-error");
 const analyzeButton = document.querySelector("#analyze-button");
@@ -32,6 +44,8 @@ const analyzeLabel = analyzeButton.querySelector("span");
 const emptyResult = document.querySelector("#result-empty");
 const loadingResult = document.querySelector("#result-loading");
 const readyResult = document.querySelector("#result-ready");
+const emptyResultTitle = document.querySelector("#empty-result-title");
+const emptyResultCopy = document.querySelector("#empty-result-copy");
 const sourceLabel = document.querySelector("#result-source");
 const qualityOptions = document.querySelector("#quality-options");
 const downloadButton = document.querySelector("#download-button");
@@ -47,11 +61,13 @@ function setResultStage(stage) {
 
 function clearError() {
   input.removeAttribute("aria-invalid");
+  fileInput.removeAttribute("aria-invalid");
   errorMessage.hidden = true;
 }
 
 function showError(message) {
-  input.setAttribute("aria-invalid", "true");
+  const field = state.sourceMode === "upload" ? fileInput : input;
+  field.setAttribute("aria-invalid", "true");
   errorMessage.textContent = message;
   errorMessage.hidden = false;
 }
@@ -77,10 +93,11 @@ async function apiRequest(path, options = {}) {
 
   let response;
   try {
+    const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
     response = await fetch(`${apiBaseUrl}${path}`, {
       ...options,
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...options.headers,
       },
     });
@@ -94,6 +111,46 @@ async function apiRequest(path, options = {}) {
   }
 
   return payload;
+}
+
+function getUploadExtension(filename) {
+  return filename.includes(".") ? filename.split(".").pop().toLowerCase() : "";
+}
+
+function isAllowedUpload(file) {
+  return /^(audio|video)\//i.test(file.type)
+    || allowedUploadExtensions.has(getUploadExtension(file.name));
+}
+
+function resetSource() {
+  state.sourceUrl = "";
+  state.sourceFile = null;
+  setResultStage("empty");
+  downloadNotice.hidden = true;
+}
+
+function setSourceMode(mode) {
+  if (mode !== "link" && mode !== "upload") return;
+
+  state.sourceMode = mode;
+  clearError();
+  resetSource();
+  linkSourcePanel.hidden = mode !== "link";
+  uploadSourcePanel.hidden = mode !== "upload";
+
+  sourceModeButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.sourceMode === mode));
+  });
+
+  if (mode === "upload") {
+    emptyResultTitle.textContent = "Escolha um arquivo do dispositivo.";
+    emptyResultCopy.textContent = "Depois, defina o formato e deixe a conversão com o VibeLoad.";
+    downloadLabel.textContent = "Converter e baixar";
+  } else {
+    emptyResultTitle.textContent = "Seu arquivo começa com um link.";
+    emptyResultCopy.textContent = "Depois da análise, as opções de formato e qualidade aparecem aqui.";
+    downloadLabel.textContent = "Baixar agora";
+  }
 }
 
 function selectQuality(quality) {
@@ -147,16 +204,42 @@ form.addEventListener("submit", async (event) => {
   clearError();
   downloadNotice.hidden = true;
 
+  if (!rightsConfirmation.checked) {
+    showError("Confirme que você possui autorização para processar este conteúdo.");
+    rightsConfirmation.focus();
+    return;
+  }
+
+  if (state.sourceMode === "upload") {
+    const file = fileInput.files?.[0];
+    if (!file) {
+      showError("Selecione um arquivo de áudio ou vídeo.");
+      fileInput.focus();
+      return;
+    }
+    if (!isAllowedUpload(file)) {
+      showError("Escolha um arquivo de áudio ou vídeo compatível.");
+      fileInput.focus();
+      return;
+    }
+    if (file.size > maxUploadBytes) {
+      showError("O arquivo excede o limite de 100 MB.");
+      fileInput.focus();
+      return;
+    }
+
+    state.sourceFile = file;
+    state.sourceUrl = "";
+    sourceLabel.textContent = file.name;
+    selectMediaType(file.type.startsWith("audio/") ? "audio" : "video");
+    setResultStage("ready");
+    return;
+  }
+
   const parsedUrl = parseMediaUrl(input.value.trim());
   if (!parsedUrl) {
     showError("Insira um endereço válido começando com http:// ou https://");
     input.focus();
-    return;
-  }
-
-  if (!rightsConfirmation.checked) {
-    showError("Confirme que você possui autorização para processar este conteúdo.");
-    rightsConfirmation.focus();
     return;
   }
 
@@ -184,7 +267,22 @@ form.addEventListener("submit", async (event) => {
 });
 
 input.addEventListener("input", clearError);
+fileInput.addEventListener("change", () => {
+  clearError();
+  resetSource();
+  const file = fileInput.files?.[0];
+  if (!file) {
+    selectedFile.textContent = "Nenhum arquivo selecionado.";
+    return;
+  }
+
+  selectedFile.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`;
+});
 rightsConfirmation.addEventListener("change", clearError);
+
+sourceModeButtons.forEach((button) => {
+  button.addEventListener("click", () => setSourceMode(button.dataset.sourceMode));
+});
 
 mediaButtons.forEach((button) => {
   button.addEventListener("click", () => selectMediaType(button.dataset.mediaType));
@@ -214,26 +312,44 @@ async function waitForJob(jobId) {
 }
 
 downloadButton.addEventListener("click", async () => {
-  if (!state.sourceUrl || !rightsConfirmation.checked) {
-    showError("Analise novamente o link e confirme que possui autorização.");
+  const hasSource = state.sourceMode === "upload" ? state.sourceFile : state.sourceUrl;
+  if (!hasSource || !rightsConfirmation.checked) {
+    showError(state.sourceMode === "upload"
+      ? "Selecione novamente o arquivo e confirme que possui autorização."
+      : "Analise novamente o link e confirme que possui autorização.");
     return;
   }
 
   downloadButton.disabled = true;
-  downloadLabel.textContent = "Preparando";
-  downloadNotice.textContent = "Criando conversão...";
+  downloadLabel.textContent = state.sourceMode === "upload" ? "Enviando" : "Preparando";
+  downloadNotice.textContent = state.sourceMode === "upload" ? "Enviando arquivo com segurança..." : "Criando conversão...";
   downloadNotice.hidden = false;
 
   try {
-    const created = await apiRequest("/api/jobs", {
-      method: "POST",
-      body: JSON.stringify({
-        url: state.sourceUrl,
+    let created;
+    if (state.sourceMode === "upload") {
+      const formData = new FormData();
+      formData.append("file", state.sourceFile, state.sourceFile.name);
+      const query = new URLSearchParams({
         mediaType: state.mediaType,
         quality: state.selected,
-        consent: true,
-      }),
-    });
+        consent: "true",
+      });
+      created = await apiRequest(`/api/uploads?${query}`, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      created = await apiRequest("/api/jobs", {
+        method: "POST",
+        body: JSON.stringify({
+          url: state.sourceUrl,
+          mediaType: state.mediaType,
+          quality: state.selected,
+          consent: true,
+        }),
+      });
+    }
     const job = await waitForJob(created.job.id);
     const downloadLink = document.createElement("a");
 
@@ -248,7 +364,7 @@ downloadButton.addEventListener("click", async () => {
     downloadNotice.textContent = error instanceof Error ? error.message : "Não foi possível preparar o arquivo.";
   } finally {
     downloadButton.disabled = false;
-    downloadLabel.textContent = "Baixar agora";
+    downloadLabel.textContent = state.sourceMode === "upload" ? "Converter e baixar" : "Baixar agora";
   }
 });
 

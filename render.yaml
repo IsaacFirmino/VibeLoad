@@ -15,6 +15,8 @@ services:
         value: https://isaacfirmino.github.io,http://127.0.0.1:4173,http://localhost:4173
       - key: MAX_SOURCE_BYTES
         value: "262144000"
+      - key: MAX_UPLOAD_BYTES
+        value: "104857600"
       - key: MAX_CONCURRENT_JOBS
         value: "1"
       - key: MAX_MEDIA_DURATION_SECONDS

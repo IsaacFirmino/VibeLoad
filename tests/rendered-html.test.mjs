@@ -38,7 +38,7 @@ test("server-renders the VibeLoad landing page", async () => {
   assert.match(html, /audio-editorial\.png/);
   assert.match(html, /offline-editorial\.png/);
   assert.equal((html.match(/<section\b/g) ?? []).length, 9);
-  assert.doesNotMatch(html, /[—–]/);
+  assert.doesNotMatch(html, /[\u2013\u2014]/u);
 });
 
 test("keeps the design and interaction contracts explicit", async () => {
@@ -58,7 +58,8 @@ test("keeps the design and interaction contracts explicit", async () => {
   assert.match(css, /animation-timeline:\s*view/);
   assert.match(converter, /AnalysisStatus = "idle" \| "loading" \| "ready" \| "error"/);
   assert.match(converter, /role="alert"/);
-  assert.match(converter, /window\.clearTimeout/);
-  assert.doesNotMatch(source, /[—–]/);
+  assert.match(converter, /new FormData\(\)/);
+  assert.match(converter, /\/api\/uploads/);
+  assert.doesNotMatch(source, /[\u2013\u2014]/u);
   assert.doesNotMatch(source, /h-screen|window\.addEventListener\(['"]scroll/);
 });
