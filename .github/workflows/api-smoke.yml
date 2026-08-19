@@ -1,0 +1,92 @@
+name: Verificar API pública do VibeLoad
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - api/**
+      - render.yaml
+      - .github/workflows/api-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_URL: https://vibeload-api-isaacfirmino.onrender.com
+    steps:
+      - name: Aguardar a API ficar saudável
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error "$API_URL/health"; then
+              exit 0
+            fi
+            sleep 20
+          done
+          exit 1
+
+      - name: Verificar análise e CORS
+        shell: bash
+        run: |
+          headers_file="$(mktemp)"
+          body_file="$(mktemp)"
+          status="$(curl --silent --show-error \
+            --dump-header "$headers_file" \
+            --output "$body_file" \
+            --write-out "%{http_code}" \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --header "Origin: https://isaacfirmino.github.io" \
+            --data '{"url":"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4","consent":true}' \
+            "$API_URL/api/analyze")"
+
+          test "$status" = "200"
+          grep --ignore-case --quiet '^access-control-allow-origin: https://isaacfirmino.github.io' "$headers_file"
+          jq --exit-status '.source and .formats.video and .formats.audio' "$body_file"
+
+      - name: Verificar conector do YouTube
+        shell: bash
+        run: |
+          curl --fail --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data '{"url":"https://www.youtube.com/watch?v=BaW_jenozKc","consent":true}' \
+            "$API_URL/api/analyze" \
+            | jq --exit-status '.source == "YouTube"'
+
+      - name: Verificar conversão e download
+        shell: bash
+        run: |
+          created="$(curl --fail --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data '{"url":"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4","mediaType":"audio","quality":"128 kbps","consent":true}' \
+            "$API_URL/api/jobs")"
+          job_id="$(jq --raw-output '.job.id' <<<"$created")"
+
+          for attempt in {1..120}; do
+            job_payload="$(curl --fail --silent --show-error "$API_URL/api/jobs/$job_id")"
+            job_status="$(jq --raw-output '.job.status' <<<"$job_payload")"
+
+            if test "$job_status" = "ready"; then
+              download_url="$(jq --raw-output '.job.downloadUrl' <<<"$job_payload")"
+              curl --fail --silent --show-error --output vibeload-smoke.m4a "$API_URL$download_url"
+              test -s vibeload-smoke.m4a
+              exit 0
+            fi
+
+            if test "$job_status" = "failed"; then
+              jq '.job' <<<"$job_payload"
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          exit 1
