@@ -23,6 +23,8 @@ const youtubeRuntimeArgs = [
   "node",
   "--remote-components",
   "ejs:github",
+  "--extractor-args",
+  "youtube:player_client=web_embedded",
 ];
 
 function matchesDomain(hostname: string, domain: string) {
