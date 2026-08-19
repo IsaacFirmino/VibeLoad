@@ -2,6 +2,7 @@ import { open } from "node:fs/promises";
 
 import { config } from "./config.js";
 import { ApiError } from "./errors.js";
+import { downloadPlatformMedia, inspectPlatformMedia } from "./platform.js";
 import { assertPublicRemoteUrl } from "./security.js";
 
 const redirectStatuses = new Set([301, 302, 303, 307, 308]);
@@ -64,6 +65,9 @@ async function fetchValidated(
 }
 
 export async function inspectRemoteMedia(value: string) {
+  const platformMetadata = await inspectPlatformMedia(value);
+  if (platformMetadata) return platformMetadata;
+
   const signal = AbortSignal.timeout(Math.min(config.downloadTimeoutMs, 30_000));
   let result = await fetchValidated(value, { method: "HEAD", signal });
 
@@ -91,6 +95,9 @@ export async function inspectRemoteMedia(value: string) {
 }
 
 export async function downloadRemoteMedia(value: string, destination: string) {
+  const platformDownload = await downloadPlatformMedia(value, destination);
+  if (platformDownload) return platformDownload;
+
   const result = await fetchValidated(value, {
     method: "GET",
     signal: AbortSignal.timeout(config.downloadTimeoutMs),
@@ -131,6 +138,7 @@ export async function downloadRemoteMedia(value: string, destination: string) {
   }
 
   return {
+    path: destination,
     ...metadata,
     receivedBytes,
     finalUrl: result.finalUrl,

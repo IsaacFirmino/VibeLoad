@@ -135,13 +135,14 @@ export async function buildApp(options: { logger?: boolean } = {}) {
 
   async function processJob(job: ConversionJob) {
     const directory = join(jobsRoot, job.id);
-    const sourcePath = join(directory, "source.media");
+    const sourceDestination = join(directory, "source.media");
 
     try {
       await mkdir(directory, { recursive: false });
       job.status = "downloading";
       job.updatedAt = Date.now();
-      await downloadRemoteMedia(job.url, sourcePath);
+      const source = await downloadRemoteMedia(job.url, sourceDestination);
+      const sourcePath = source.path;
 
       const profile = getProfile(job.mediaType, job.quality);
       const outputPath = join(directory, `vibeload-${job.id}.${profile.extension}`);

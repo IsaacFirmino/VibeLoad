@@ -3,6 +3,10 @@ services:
     name: vibeload-api-isaacfirmino
     runtime: docker
     plan: free
+    repo: https://github.com/IsaacFirmino/VibeLoad
+    branch: main
+    autoDeployTrigger: commit
+    renderSubdomainPolicy: enabled
     dockerfilePath: ./api/Dockerfile
     dockerContext: ./api
     healthCheckPath: /health
@@ -13,5 +17,9 @@ services:
         value: "262144000"
       - key: MAX_CONCURRENT_JOBS
         value: "1"
+      - key: MAX_MEDIA_DURATION_SECONDS
+        value: "7200"
+      - key: DOWNLOAD_TIMEOUT_MS
+        value: "600000"
       - key: JOB_TTL_MS
         value: "900000"

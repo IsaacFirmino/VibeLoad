@@ -1,6 +1,6 @@
 # VibeLoad API
 
-API Node.js e TypeScript para converter arquivos de mídia próprios, autorizados ou em domínio público.
+API Node.js e TypeScript para converter arquivos de mídia próprios, autorizados ou em domínio público. Aceita arquivos diretos e links públicos do YouTube, Instagram, TikTok e Facebook, sem contornar DRM ou autenticação.
 
 ## Desenvolvimento local
 
@@ -8,6 +8,7 @@ Requisitos:
 
 - Node.js 22 ou superior
 - FFmpeg disponível no PATH
+- yt-dlp disponível no PATH para links de plataformas
 
 Instale e execute:
 

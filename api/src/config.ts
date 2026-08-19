@@ -23,6 +23,7 @@ export const config = {
   port: readPositiveInteger("PORT", 8787),
   allowedOrigins: readOrigins(),
   maxSourceBytes: readPositiveInteger("MAX_SOURCE_BYTES", 250 * 1024 * 1024),
+  maxMediaDurationSeconds: readPositiveInteger("MAX_MEDIA_DURATION_SECONDS", 2 * 60 * 60),
   maxConcurrentJobs: readPositiveInteger("MAX_CONCURRENT_JOBS", 1),
   downloadTimeoutMs: readPositiveInteger("DOWNLOAD_TIMEOUT_MS", 2 * 60 * 1000),
   conversionTimeoutMs: readPositiveInteger("CONVERSION_TIMEOUT_MS", 10 * 60 * 1000),
