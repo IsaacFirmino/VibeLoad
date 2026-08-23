@@ -1,12 +1,10 @@
-import { createReadStream, createWriteStream } from "node:fs";
+import { createReadStream } from "node:fs";
 import { mkdir, rm, stat, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, extname, join } from "node:path";
+import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { pipeline } from "node:stream/promises";
 
 import cors from "@fastify/cors";
-import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance } from "fastify";
 
@@ -21,9 +19,7 @@ type JobStatus = "queued" | "downloading" | "converting" | "ready" | "failed";
 
 type ConversionJob = {
   id: string;
-  url?: string;
-  sourcePath?: string;
-  sourceName?: string;
+  url: string;
   mediaType: MediaType;
   quality: string;
   status: JobStatus;
@@ -48,32 +44,6 @@ type AnalyzeBody = {
   url?: unknown;
   consent?: unknown;
 };
-
-type UploadJobQuery = {
-  mediaType?: unknown;
-  quality?: unknown;
-  consent?: unknown;
-};
-
-const allowedUploadExtensions = new Set([
-  ".aac",
-  ".flac",
-  ".m4a",
-  ".mkv",
-  ".mov",
-  ".mp3",
-  ".mp4",
-  ".mpeg",
-  ".ogg",
-  ".opus",
-  ".wav",
-  ".webm",
-]);
-
-function isAllowedUpload(filename: string, mimetype: string) {
-  return /^(audio|video)\//i.test(mimetype)
-    || allowedUploadExtensions.has(extname(filename).toLowerCase());
-}
 
 class TaskQueue {
   private active = 0;
@@ -134,6 +104,7 @@ function serializeJob(job: ConversionJob) {
 export async function buildApp(options: {
   logger?: boolean;
   convert?: typeof convertMedia;
+  download?: typeof downloadRemoteMedia;
 } = {}) {
   const app = Fastify({
     logger: options.logger ?? process.env.NODE_ENV !== "test",
@@ -143,6 +114,7 @@ export async function buildApp(options: {
   const queue = new TaskQueue(config.maxConcurrentJobs);
   const jobsRoot = join(tmpdir(), "vibeload-jobs");
   const mediaConverter = options.convert ?? convertMedia;
+  const mediaDownloader = options.download ?? downloadRemoteMedia;
 
   await mkdir(jobsRoot, { recursive: true });
 
@@ -154,14 +126,6 @@ export async function buildApp(options: {
         return;
       }
       callback(new Error("Origem não permitida."), false);
-    },
-  });
-
-  await app.register(multipart, {
-    limits: {
-      files: 1,
-      fields: 0,
-      fileSize: config.maxUploadBytes,
     },
   });
 
@@ -181,20 +145,17 @@ export async function buildApp(options: {
 
     try {
       await mkdir(directory, { recursive: true });
-      let sourcePath = job.sourcePath;
-
-      if (!sourcePath) {
-        if (!job.url) throw new ApiError("A origem da mídia não foi encontrada.", 400, "SOURCE_NOT_FOUND");
-        job.status = "downloading";
-        job.updatedAt = Date.now();
-        const source = await downloadRemoteMedia(job.url, sourceDestination);
-        sourcePath = source.path;
-      }
-
       const profile = getProfile(job.mediaType, job.quality);
+      job.status = "downloading";
+      job.updatedAt = Date.now();
+      app.log.info({ jobId: job.id, mediaType: job.mediaType, quality: job.quality }, "media download started");
+      const source = await mediaDownloader(job.url, sourceDestination, job.mediaType, job.quality);
+      const sourcePath = source.path;
+
       const outputPath = join(directory, `vibeload-${job.id}.${profile.extension}`);
       job.status = "converting";
       job.updatedAt = Date.now();
+      app.log.info({ jobId: job.id }, "media conversion started");
 
       await mediaConverter(sourcePath, outputPath, profile);
       await unlink(sourcePath).catch(() => undefined);
@@ -207,10 +168,13 @@ export async function buildApp(options: {
       job.size = outputStats.size;
       job.updatedAt = Date.now();
       job.expiresAt = Date.now() + config.jobTtlMs;
+      app.log.info({ jobId: job.id, size: job.size }, "media job ready");
     } catch (error) {
+      const failedAt = job.status;
       job.status = "failed";
       job.updatedAt = Date.now();
       job.error = error instanceof ApiError ? error.message : "Falha inesperada durante a conversão.";
+      app.log.error({ err: error, jobId: job.id, failedAt }, "media job failed");
       await removeJobFiles(job).catch(() => undefined);
     }
   }
@@ -276,58 +240,6 @@ export async function buildApp(options: {
     jobs.set(job.id, job);
     queue.add(() => processJob(job));
 
-    return reply.code(202).send({ job: serializeJob(job) });
-  });
-
-  app.post<{ Querystring: UploadJobQuery }>("/api/uploads", async (request, reply) => {
-    requireRightsConsent(request.query?.consent === "true");
-    const mediaType = requireString(request.query?.mediaType, "Tipo de mídia");
-    const quality = requireString(request.query?.quality, "Qualidade");
-    getProfile(mediaType, quality);
-
-    const upload = await request.file();
-    if (!upload) throw new ApiError("Selecione um arquivo de áudio ou vídeo.", 400, "UPLOAD_REQUIRED");
-    if (!isAllowedUpload(upload.filename, upload.mimetype)) {
-      upload.file.resume();
-      throw new ApiError("O formato deste arquivo não é compatível.", 415, "UNSUPPORTED_UPLOAD_TYPE");
-    }
-
-    const now = Date.now();
-    const jobId = randomUUID();
-    const directory = join(jobsRoot, jobId);
-    const sourcePath = join(directory, "source.upload");
-
-    await mkdir(directory, { recursive: false });
-    try {
-      await pipeline(upload.file, createWriteStream(sourcePath, { flags: "wx" }));
-    } catch (error) {
-      await rm(directory, { recursive: true, force: true });
-      if (error instanceof app.multipartErrors.RequestFileTooLargeError) {
-        throw new ApiError("O arquivo excede o limite de 100 MB.", 413, "UPLOAD_TOO_LARGE");
-      }
-      throw error;
-    }
-
-    const sourceStats = await stat(sourcePath);
-    if (sourceStats.size === 0) {
-      await rm(directory, { recursive: true, force: true });
-      throw new ApiError("O arquivo enviado está vazio.", 400, "EMPTY_UPLOAD");
-    }
-
-    const job: ConversionJob = {
-      id: jobId,
-      sourcePath,
-      sourceName: basename(upload.filename).slice(0, 200),
-      mediaType: mediaType as MediaType,
-      quality,
-      status: "queued",
-      createdAt: now,
-      updatedAt: now,
-      expiresAt: now + config.jobTtlMs,
-    };
-
-    jobs.set(job.id, job);
-    queue.add(() => processJob(job));
     return reply.code(202).send({ job: serializeJob(job) });
   });
 

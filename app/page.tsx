@@ -31,12 +31,16 @@ export default function Home() {
             <a href="#recursos">Recursos</a>
             <a href="#faq">Dúvidas</a>
           </div>
+          <a className="nav-download" href="#converter">Baixar agora</a>
         </nav>
       </header>
 
       <section className="hero-v2" id="top">
         <div className="hero-v2-copy">
-          <h1><span>Salve o que você quer.</span><span>Ouça quando quiser.</span></h1>
+          <h1>
+            <span><strong>Salve</strong> o que você quer.</span>
+            <span><strong>Ouça</strong> quando quiser.</span>
+          </h1>
           <p>Cole o link, escolha vídeo ou áudio e baixe na qualidade certa para cada momento.</p>
           <div className="hero-v2-actions">
             <RainbowLink className="h-[52px] px-[22px]" href="#converter">Baixar agora</RainbowLink>
@@ -45,12 +49,12 @@ export default function Home() {
         </div>
         <figure className="hero-v2-media">
           <Image
-            src="/hero-editorial.png"
-            alt="Smartphone e fones de ouvido em uma composição de estúdio"
-            width={1152}
+            src="/vibeload-hero-3d.webp"
+            alt="Smartphone, fones de ouvido e botão de reprodução em uma escultura 3D"
+            width={1024}
             height={1536}
             priority
-            sizes="(max-width: 767px) 100vw, 45vw"
+            sizes="(max-width: 767px) 88vw, 520px"
           />
         </figure>
       </section>
@@ -70,7 +74,7 @@ export default function Home() {
       <section className="converter-section reveal" id="converter">
         <div className="section-copy-stack">
           <h2>Um campo. Todas as escolhas.</h2>
-          <p>Analise o link, escolha o formato e prepare o arquivo sem sair da página.</p>
+          <p>Analise o link, escolha o formato e baixe o arquivo sem sair da página.</p>
         </div>
         <ConverterWorkbench />
       </section>
@@ -122,7 +126,10 @@ export default function Home() {
           <article className="resource-quality"><strong>4K</strong><h3>Imagem preservada</h3><p>Resoluções para diferentes telas e conexões.</p></article>
           <article className="resource-private"><h3>Sem cadastro obrigatório</h3><p>O fluxo começa pelo link, não por um perfil.</p></article>
           <article className="resource-device"><strong>PC<br />iOS<br />Android</strong><p>Uma experiência adaptada para qualquer tela.</p></article>
-          <article className="resource-direct"><h3>Direto no navegador</h3><p>Nada para instalar antes de começar.</p></article>
+          <article className="resource-direct">
+            <Image src="/hero-editorial.png" alt="Smartphone e fones de ouvido em uma composição de estúdio" width={1152} height={1536} sizes="(max-width: 767px) 100vw, 38vw" />
+            <div><h3>Direto no navegador</h3><p>Nada para instalar antes de começar.</p></div>
+          </article>
         </div>
       </section>
 
@@ -132,7 +139,7 @@ export default function Home() {
         </figure>
         <div className="offline-caption">
           <h2>Seu ritmo continua offline.</h2>
-          <p>Prepare vídeos e músicas para ouvir quando a conexão não acompanhar você.</p>
+          <p>Baixe vídeos e músicas para ouvir quando a conexão não acompanhar você.</p>
         </div>
       </section>
 

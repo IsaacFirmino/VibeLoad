@@ -3,6 +3,7 @@ import { open } from "node:fs/promises";
 import { config } from "./config.js";
 import { ApiError } from "./errors.js";
 import { downloadPlatformMedia, inspectPlatformMedia } from "./platform.js";
+import type { MediaType } from "./profiles.js";
 import { assertPublicRemoteUrl } from "./security.js";
 
 const redirectStatuses = new Set([301, 302, 303, 307, 308]);
@@ -94,8 +95,13 @@ export async function inspectRemoteMedia(value: string) {
   };
 }
 
-export async function downloadRemoteMedia(value: string, destination: string) {
-  const platformDownload = await downloadPlatformMedia(value, destination);
+export async function downloadRemoteMedia(
+  value: string,
+  destination: string,
+  mediaType: MediaType,
+  quality: string,
+) {
+  const platformDownload = await downloadPlatformMedia(value, destination, mediaType, quality);
   if (platformDownload) return platformDownload;
 
   const result = await fetchValidated(value, {

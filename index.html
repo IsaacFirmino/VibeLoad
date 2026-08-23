@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#12141d" />
+    <meta name="theme-color" content="#e8f4f8" />
     <meta
       name="vibeload-api-url"
       content="https://vibeload-api-isaacfirmino.onrender.com"
     />
     <meta
       name="description"
-      content="Prepare links de mídia em vídeo ou áudio e escolha a qualidade ideal para o seu dispositivo."
+      content="Baixe vídeos e músicas por link e escolha a qualidade ideal para o seu dispositivo."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
@@ -18,7 +18,7 @@
     <meta property="og:title" content="VibeLoad | Vídeos e músicas no seu ritmo" />
     <meta
       property="og:description"
-      content="Prepare links de mídia em vídeo ou áudio e escolha a qualidade ideal para o seu dispositivo."
+      content="Baixe vídeos e músicas por link e escolha a qualidade ideal para o seu dispositivo."
     />
     <meta
       property="og:image"
@@ -26,7 +26,7 @@
     />
     <title>VibeLoad | Vídeos e músicas no seu ritmo</title>
     <link rel="icon" href="./public/vibeload-mark.svg" type="image/svg+xml" />
-    <link rel="preload" href="./public/hero-editorial.png" as="image" />
+    <link rel="preload" href="./public/vibeload-hero-3d.webp" as="image" type="image/webp" />
     <link rel="stylesheet" href="./styles.css" />
     <script src="./script.js" defer></script>
   </head>
@@ -47,17 +47,18 @@
             <a href="#recursos">Recursos</a>
             <a href="#faq">Dúvidas</a>
           </div>
+          <a class="nav-download" href="#converter">Baixar agora</a>
         </nav>
       </header>
 
       <section class="hero-v2" id="top">
         <div class="hero-v2-copy">
           <h1>
-            <span>Salve o que você quer.</span>
-            <span>Ouça quando quiser.</span>
+            <span><strong>Salve</strong> o que você quer.</span>
+            <span><strong>Ouça</strong> quando quiser.</span>
           </h1>
           <p>
-            Cole o link, escolha vídeo ou áudio e prepare o arquivo na qualidade certa para cada momento.
+            Cole o link, escolha vídeo ou áudio e baixe o arquivo na qualidade certa para cada momento.
           </p>
           <div class="hero-v2-actions">
             <a class="rainbow-button" href="#converter"><span>Baixar agora</span></a>
@@ -66,9 +67,9 @@
         </div>
         <figure class="hero-v2-media">
           <img
-            src="./public/hero-editorial.png"
-            alt="Smartphone e fones de ouvido em uma composição de estúdio"
-            width="1152"
+            src="./public/vibeload-hero-3d.webp"
+            alt="Smartphone, fones de ouvido e botão de reprodução em uma escultura 3D"
+            width="1024"
             height="1536"
           />
         </figure>
@@ -88,56 +89,28 @@
       <section class="converter-section reveal" id="converter">
         <div class="section-copy-stack">
           <h2>Um campo. Todas as escolhas.</h2>
-          <p>Analise o link, escolha o formato e prepare o arquivo sem sair da página.</p>
+          <p>Analise o link, escolha o formato e baixe o arquivo sem sair da página.</p>
         </div>
 
         <div class="workbench" aria-live="polite">
           <form class="workbench-form" id="converter-form" novalidate>
-            <div class="source-switch" aria-label="Origem da mídia">
-              <button id="source-link-button" type="button" data-source-mode="link" aria-pressed="true">Colar link</button>
-              <button id="source-upload-button" type="button" data-source-mode="upload" aria-pressed="false">Enviar arquivo</button>
-            </div>
-
-            <div id="link-source-panel">
-              <label for="media-link">Link do vídeo ou áudio</label>
-              <div class="workbench-form-row">
-                <input
-                  id="media-link"
-                  name="media-link"
-                  type="url"
-                  inputmode="url"
-                  placeholder="https://"
-                  aria-describedby="media-link-help media-link-error"
-                />
-                <button class="rainbow-button rainbow-button-tall" id="analyze-button" type="submit">
-                  <span>Analisar link</span>
-                </button>
-              </div>
-              <p id="media-link-help" class="workbench-help">
-                Use conteúdo próprio, autorizado ou em domínio público.
-              </p>
-            </div>
-
-            <div id="upload-source-panel" hidden>
-              <label for="media-file">Arquivo do seu dispositivo</label>
-              <label class="upload-field" for="media-file">
-                <input
-                  id="media-file"
-                  name="media-file"
-                  type="file"
-                  accept="audio/*,video/*,.m4a,.mkv,.mov,.mp3,.mp4,.ogg,.wav,.webm"
-                  aria-describedby="upload-help media-link-error"
-                />
-                <span class="upload-field-copy">
-                  <strong>Escolher áudio ou vídeo</strong>
-                  <small id="upload-help">MP4, MP3, M4A, MOV, WAV ou WEBM, até 100 MB</small>
-                </span>
-              </label>
-              <p class="selected-file" id="selected-file">Nenhum arquivo selecionado.</p>
-              <button class="rainbow-button rainbow-button-tall upload-prepare" id="prepare-upload-button" type="submit">
-                <span>Usar este arquivo</span>
+            <label for="media-link">Link do vídeo ou áudio</label>
+            <div class="workbench-form-row">
+              <input
+                id="media-link"
+                name="media-link"
+                type="url"
+                inputmode="url"
+                placeholder="https://"
+                aria-describedby="media-link-help media-link-error"
+              />
+              <button class="rainbow-button rainbow-button-tall" id="analyze-button" type="submit">
+                <span>Analisar link</span>
               </button>
             </div>
+            <p id="media-link-help" class="workbench-help">
+              Cole um link público de conteúdo próprio, autorizado ou em domínio público.
+            </p>
 
             <label class="rights-confirmation" for="rights-confirmation">
               <input id="rights-confirmation" type="checkbox" required />
@@ -150,8 +123,8 @@
 
           <div class="workbench-result">
             <div class="result-empty" id="result-empty">
-              <strong id="empty-result-title">Seu arquivo começa com um link.</strong>
-              <p id="empty-result-copy">Depois da análise, as opções de formato e qualidade aparecem aqui.</p>
+              <strong>Seu download começa com um link.</strong>
+              <p>Depois da análise, escolha vídeo ou áudio e a qualidade desejada.</p>
             </div>
 
             <div class="result-loading" id="result-loading" aria-label="Analisando mídia" hidden>
@@ -236,7 +209,10 @@
           <article class="resource-quality"><strong>4K</strong><h3>Imagem preservada</h3><p>Resoluções para diferentes telas e conexões.</p></article>
           <article class="resource-private"><h3>Sem cadastro obrigatório</h3><p>O fluxo começa pelo link, não por um perfil.</p></article>
           <article class="resource-device"><strong>PC<br />iOS<br />Android</strong><p>Uma experiência adaptada para qualquer tela.</p></article>
-          <article class="resource-direct"><h3>Direto no navegador</h3><p>Nada para instalar antes de começar.</p></article>
+          <article class="resource-direct">
+            <img src="./public/hero-editorial.png" alt="Smartphone e fones de ouvido em uma composição de estúdio" width="1152" height="1536" loading="lazy" />
+            <div><h3>Direto no navegador</h3><p>Nada para instalar antes de começar.</p></div>
+          </article>
         </div>
       </section>
 
@@ -252,7 +228,7 @@
         </figure>
         <div class="offline-caption">
           <h2>Seu ritmo continua offline.</h2>
-          <p>Prepare vídeos e músicas para ouvir quando a conexão não acompanhar você.</p>
+          <p>Baixe vídeos e músicas para ouvir quando a conexão não acompanhar você.</p>
         </div>
       </section>
 

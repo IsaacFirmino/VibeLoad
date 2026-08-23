@@ -18,8 +18,8 @@ test("provides a complete static GitHub Pages entrypoint", async () => {
   assert.match(html, /src="\.\/script\.js"/);
   assert.match(html, /id="converter-form"/);
   assert.match(html, /id="rights-confirmation"/);
-  assert.match(html, /id="media-file"/);
-  assert.match(html, /id="source-upload-button"/);
+  assert.match(html, /id="media-link"/);
+  assert.doesNotMatch(html, /id="media-file"|Enviar arquivo/);
   assert.match(html, /name="vibeload-api-url"/);
   assert.match(html, /public\/vibeload-mark\.svg/);
   assert.doesNotMatch(html, /public\/vibeload-logo\.png/);
@@ -34,7 +34,7 @@ test("keeps every referenced local asset available", async () => {
   await Promise.all(paths.map((relativePath) => access(new URL(relativePath, root))));
 });
 
-test("ships the converter interaction and rainbow styling without a framework runtime", async () => {
+test("ships the converter interaction and branded styling without a framework runtime", async () => {
   const [html, css, script] = await Promise.all([
     read("index.html"),
     read("styles.css"),
@@ -43,12 +43,12 @@ test("ships the converter interaction and rainbow styling without a framework ru
 
   assert.doesNotMatch(html, /<script[^>]+(?:next|react)/i);
   assert.match(css, /\.rainbow-button\s*\{/);
-  assert.match(css, /@keyframes rainbow/);
+  assert.match(css, /--accent:\s*#08afd8/);
+  assert.match(css, /@keyframes object-float/);
   assert.match(script, /form\.addEventListener\("submit"/);
   assert.match(script, /apiRequest\("\/api\/analyze"/);
   assert.match(script, /apiRequest\("\/api\/jobs"/);
-  assert.match(script, /apiRequest\(`\/api\/uploads\?\$\{query\}`/);
-  assert.match(script, /new FormData\(\)/);
+  assert.doesNotMatch(script, /\/api\/uploads|new FormData\(\)/);
   assert.match(script, /renderQualityOptions\(\)/);
   assert.match(script, /IntersectionObserver/);
 });

@@ -33,7 +33,7 @@ test("server-renders the VibeLoad landing page", async () => {
   assert.match(html, /VibeLoad \| Vídeos e músicas no seu ritmo/);
   assert.match(html, /Salve o que você quer\./);
   assert.match(html, /Ouça quando quiser\./);
-  assert.match(html, /Seu arquivo começa com um link\./);
+  assert.match(html, /Seu download começa com um link\./);
   assert.match(html, /hero-editorial\.png/);
   assert.match(html, /audio-editorial\.png/);
   assert.match(html, /offline-editorial\.png/);
@@ -42,24 +42,25 @@ test("server-renders the VibeLoad landing page", async () => {
 });
 
 test("keeps the design and interaction contracts explicit", async () => {
-  const [page, css, converter, layout] = await Promise.all([
+  const [page, cssEntry, sharedCss, converter, layout] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../styles.css", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ConverterWorkbench.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
   ]);
 
-  const source = `${page}\n${css}\n${converter}\n${layout}`;
+  const source = `${page}\n${cssEntry}\n${sharedCss}\n${converter}\n${layout}`;
   assert.equal((page.match(/<section\b/g) ?? []).length, 9);
   assert.match(page, /cdn\.simpleicons\.org/);
-  assert.match(css, /prefers-color-scheme:\s*dark/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.match(css, /100dvh/);
-  assert.match(css, /animation-timeline:\s*view/);
+  assert.match(cssEntry, /@import "\.\.\/styles\.css"/);
+  assert.match(sharedCss, /prefers-color-scheme:\s*dark/);
+  assert.match(sharedCss, /prefers-reduced-motion:\s*reduce/);
+  assert.match(sharedCss, /100dvh/);
+  assert.match(sharedCss, /animation-timeline:\s*view/);
   assert.match(converter, /AnalysisStatus = "idle" \| "loading" \| "ready" \| "error"/);
   assert.match(converter, /role="alert"/);
-  assert.match(converter, /new FormData\(\)/);
-  assert.match(converter, /\/api\/uploads/);
+  assert.doesNotMatch(converter, /new FormData\(\)|\/api\/uploads|type="file"/);
   assert.doesNotMatch(source, /[\u2013\u2014]/u);
   assert.doesNotMatch(source, /h-screen|window\.addEventListener\(['"]scroll/);
 });

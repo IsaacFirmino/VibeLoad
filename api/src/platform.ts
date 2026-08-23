@@ -4,6 +4,7 @@ import { basename, dirname, join } from "node:path";
 
 import { config } from "./config.js";
 import { ApiError } from "./errors.js";
+import type { MediaType } from "./profiles.js";
 import { assertPublicRemoteUrl, parseRemoteUrl } from "./security.js";
 
 type SupportedPlatform = {
@@ -18,14 +19,26 @@ const supportedPlatforms: SupportedPlatform[] = [
   { name: "Facebook", domains: ["facebook.com", "fb.watch"] },
 ];
 
-const youtubeRuntimeArgs = [
+const ytDlpRuntimeArgs = [
   "--js-runtimes",
   "node",
   "--remote-components",
   "ejs:github",
-  "--extractor-args",
-  "youtube:player_client=android_vr",
 ];
+
+const videoQualityHeights: Record<string, number> = {
+  "4K": 2160,
+  "1080p": 1080,
+  "720p": 720,
+  "480p": 480,
+};
+
+export function getPlatformFormatSelector(mediaType: MediaType, quality: string) {
+  if (mediaType === "audio") return "ba/b";
+
+  const maximumHeight = videoQualityHeights[quality] ?? 1080;
+  return `bv*[height<=${maximumHeight}]+ba/b[height<=${maximumHeight}]/b`;
+}
 
 function matchesDomain(hostname: string, domain: string) {
   return hostname === domain || hostname.endsWith(`.${domain}`);
@@ -105,7 +118,7 @@ export async function inspectPlatformMedia(value: string) {
   if (!platform) return null;
 
   const output = await runYtDlp([
-    ...youtubeRuntimeArgs,
+    ...ytDlpRuntimeArgs,
     "--dump-single-json",
     "--skip-download",
     "--no-playlist",
@@ -145,7 +158,12 @@ export async function inspectPlatformMedia(value: string) {
   };
 }
 
-export async function downloadPlatformMedia(value: string, destination: string) {
+export async function downloadPlatformMedia(
+  value: string,
+  destination: string,
+  mediaType: MediaType,
+  quality: string,
+) {
   const url = await assertPublicRemoteUrl(value);
   const platform = getSupportedPlatform(url);
   if (!platform) return null;
@@ -155,17 +173,21 @@ export async function downloadPlatformMedia(value: string, destination: string) 
   const outputTemplate = join(directory, `${outputPrefix}.%(ext)s`);
 
   await runYtDlp([
-    ...youtubeRuntimeArgs,
+    ...ytDlpRuntimeArgs,
     "--no-playlist",
     "--no-warnings",
     "--no-progress",
     "--no-simulate",
     "--socket-timeout",
     "30",
+    "--retries",
+    "3",
+    "--fragment-retries",
+    "3",
     "--max-filesize",
     String(config.maxSourceBytes),
     "--format",
-    "bv*+ba/b",
+    getPlatformFormatSelector(mediaType, quality),
     "--merge-output-format",
     "mp4",
     "--output",

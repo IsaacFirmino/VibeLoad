@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const baseUrl = new URL(`${protocol}://${host}`);
   const title = "VibeLoad | Vídeos e músicas no seu ritmo";
-  const description = "Converta links de mídia em vídeo ou áudio e escolha a qualidade ideal para o seu dispositivo.";
+  const description = "Baixe vídeos e músicas por link e escolha a qualidade ideal para o seu dispositivo.";
   const socialImage = new URL("/og.png", baseUrl).toString();
 
   return {

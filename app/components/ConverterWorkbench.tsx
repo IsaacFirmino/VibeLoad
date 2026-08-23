@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 
 type MediaType = "video" | "audio";
-type SourceMode = "link" | "upload";
 type AnalysisStatus = "idle" | "loading" | "ready" | "error";
 
 type ConversionJob = {
@@ -15,7 +14,6 @@ type ConversionJob = {
 };
 
 const apiBaseUrl = "https://vibeload-api-isaacfirmino.onrender.com";
-const maxUploadBytes = 100 * 1024 * 1024;
 
 const formats = {
   video: [
@@ -33,11 +31,10 @@ const formats = {
 };
 
 async function apiRequest<T>(path: string, options: RequestInit = {}) {
-  const isFormData = options.body instanceof FormData;
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...options,
     headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      "Content-Type": "application/json",
       ...options.headers,
     },
   });
@@ -67,9 +64,7 @@ async function waitForJob(jobId: string, onStatus: (message: string) => void) {
 }
 
 export function ConverterWorkbench() {
-  const [sourceMode, setSourceMode] = useState<SourceMode>("link");
   const [url, setUrl] = useState("");
-  const [file, setFile] = useState<File | null>(null);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [status, setStatus] = useState<AnalysisStatus>("idle");
   const [mediaType, setMediaType] = useState<MediaType>("video");
@@ -77,12 +72,6 @@ export function ConverterWorkbench() {
   const [source, setSource] = useState("link de mídia");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-
-  function changeSourceMode(mode: SourceMode) {
-    setSourceMode(mode);
-    setStatus("idle");
-    setNotice("");
-  }
 
   function changeType(type: MediaType) {
     setMediaType(type);
@@ -97,23 +86,6 @@ export function ConverterWorkbench() {
     if (!rightsConfirmed) {
       setStatus("error");
       setNotice("Confirme que possui autorização para processar este conteúdo.");
-      return;
-    }
-
-    if (sourceMode === "upload") {
-      if (!file) {
-        setStatus("error");
-        setNotice("Selecione um arquivo de áudio ou vídeo.");
-        return;
-      }
-      if (file.size > maxUploadBytes) {
-        setStatus("error");
-        setNotice("O arquivo excede o limite de 100 MB.");
-        return;
-      }
-      setSource(file.name);
-      changeType(file.type.startsWith("audio/") ? "audio" : "video");
-      setStatus("ready");
       return;
     }
 
@@ -143,26 +115,18 @@ export function ConverterWorkbench() {
   }
 
   async function prepareDownload() {
-    if (!rightsConfirmed || (sourceMode === "upload" ? !file : !url)) {
-      setNotice("Selecione novamente a origem e confirme que possui autorização.");
+    if (!rightsConfirmed || !url) {
+      setNotice("Analise novamente o link e confirme que possui autorização.");
       return;
     }
 
     setBusy(true);
-    setNotice(sourceMode === "upload" ? "Enviando arquivo com segurança..." : "Criando conversão...");
+    setNotice("Criando download...");
     try {
-      let created: { job: ConversionJob };
-      if (sourceMode === "upload" && file) {
-        const formData = new FormData();
-        formData.append("file", file, file.name);
-        const query = new URLSearchParams({ mediaType, quality: selected, consent: "true" });
-        created = await apiRequest<{ job: ConversionJob }>(`/api/uploads?${query}`, { method: "POST", body: formData });
-      } else {
-        created = await apiRequest<{ job: ConversionJob }>("/api/jobs", {
-          method: "POST",
-          body: JSON.stringify({ url, mediaType, quality: selected, consent: true }),
-        });
-      }
+      const created = await apiRequest<{ job: ConversionJob }>("/api/jobs", {
+        method: "POST",
+        body: JSON.stringify({ url, mediaType, quality: selected, consent: true }),
+      });
 
       const job = await waitForJob(created.job.id, setNotice);
       const downloadLink = document.createElement("a");
@@ -181,30 +145,12 @@ export function ConverterWorkbench() {
   return (
     <div className="workbench" aria-live="polite">
       <form className="workbench-form" onSubmit={prepareSource} noValidate>
-        <div className="source-switch" aria-label="Origem da mídia">
-          <button type="button" aria-pressed={sourceMode === "link"} onClick={() => changeSourceMode("link")}>Colar link</button>
-          <button type="button" aria-pressed={sourceMode === "upload"} onClick={() => changeSourceMode("upload")}>Enviar arquivo</button>
+        <label htmlFor="media-link">Link do vídeo ou áudio</label>
+        <div className="workbench-form-row">
+          <input id="media-link" inputMode="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://" aria-invalid={status === "error"} />
+          <RainbowButton className="h-14 px-[18px]" type="submit" disabled={status === "loading"}>{status === "loading" ? "Analisando" : "Analisar link"}</RainbowButton>
         </div>
-
-        {sourceMode === "link" ? (
-          <>
-            <label htmlFor="media-link">Link do vídeo ou áudio</label>
-            <div className="workbench-form-row">
-              <input id="media-link" inputMode="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://" aria-invalid={status === "error"} />
-              <RainbowButton className="h-14 px-[18px]" type="submit" disabled={status === "loading"}>{status === "loading" ? "Analisando" : "Analisar link"}</RainbowButton>
-            </div>
-            <p className="workbench-help">Use conteúdo próprio, autorizado ou em domínio público.</p>
-          </>
-        ) : (
-          <>
-            <div className="upload-field">
-              <input id="media-file" type="file" accept="audio/*,video/*,.m4a,.mkv,.mov,.mp3,.mp4,.ogg,.wav,.webm" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-              <label className="upload-field-copy" htmlFor="media-file"><strong>Escolher áudio ou vídeo</strong><small>Arquivos de até 100 MB</small></label>
-            </div>
-            <p className="selected-file">{file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB` : "Nenhum arquivo selecionado."}</p>
-            <RainbowButton className="upload-prepare h-14 px-[18px]" type="submit">Usar este arquivo</RainbowButton>
-          </>
-        )}
+        <p className="workbench-help">Cole um link público de conteúdo próprio, autorizado ou em domínio público.</p>
 
         <label className="rights-confirmation" htmlFor="rights-confirmation-react">
           <input id="rights-confirmation-react" type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} />
@@ -216,8 +162,8 @@ export function ConverterWorkbench() {
       <div className="workbench-result">
         {status === "idle" || status === "error" ? (
           <div className="result-empty">
-            <strong>{sourceMode === "upload" ? "Escolha um arquivo do dispositivo." : "Seu arquivo começa com um link."}</strong>
-            <p>{sourceMode === "upload" ? "Depois, defina o formato e deixe a conversão com o VibeLoad." : "Depois da análise, as opções aparecem aqui."}</p>
+            <strong>Seu download começa com um link.</strong>
+            <p>Depois da análise, escolha vídeo ou áudio e a qualidade desejada.</p>
           </div>
         ) : null}
         {status === "loading" ? (
@@ -239,7 +185,7 @@ export function ConverterWorkbench() {
                 </button>
               ))}
             </div>
-            <RainbowButton className="download-action h-14 px-[18px]" type="button" disabled={busy} onClick={prepareDownload}>{busy ? "Processando" : sourceMode === "upload" ? "Converter e baixar" : "Baixar agora"}</RainbowButton>
+            <RainbowButton className="download-action h-14 px-[18px]" type="button" disabled={busy} onClick={prepareDownload}>{busy ? "Processando" : "Baixar agora"}</RainbowButton>
             {notice && <p className="download-notice" role="status">{notice}</p>}
           </div>
         ) : null}
