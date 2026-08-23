@@ -24,7 +24,13 @@ const ytDlpRuntimeArgs = [
   "node",
   "--remote-components",
   "ejs:github",
+  "--extractor-args",
+  "youtubepot-bgutilscript:server_home=/opt/bgutil-ytdlp-pot-provider/server",
 ];
+
+export function getYtDlpRuntimeArgs() {
+  return [...ytDlpRuntimeArgs];
+}
 
 const videoQualityHeights: Record<string, number> = {
   "4K": 2160,

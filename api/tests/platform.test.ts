@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { getPlatformFormatSelector, getSupportedPlatform } from "../src/platform.js";
+import {
+  getPlatformFormatSelector,
+  getSupportedPlatform,
+  getYtDlpRuntimeArgs,
+} from "../src/platform.js";
 
 test("recognizes only the advertised platform hostnames", () => {
   assert.equal(getSupportedPlatform("https://www.youtube.com/watch?v=example")?.name, "YouTube");
@@ -26,4 +30,11 @@ test("downloads only the source stream needed for the selected output", () => {
     getPlatformFormatSelector("video", "4K"),
     "bv*[height<=2160]+ba/b[height<=2160]/b",
   );
+});
+
+test("configures the pinned PO token provider used by the runtime image", () => {
+  assert.deepEqual(getYtDlpRuntimeArgs().slice(-2), [
+    "--extractor-args",
+    "youtubepot-bgutilscript:server_home=/opt/bgutil-ytdlp-pot-provider/server",
+  ]);
 });
