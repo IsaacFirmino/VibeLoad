@@ -26,6 +26,8 @@ const ytDlpRuntimeArgs = [
   "ejs:github",
   "--extractor-args",
   "youtubepot-bgutilscript:server_home=/opt/bgutil-ytdlp-pot-provider/server",
+  "--extractor-args",
+  "youtube:player_client=mweb",
 ];
 
 export function getYtDlpRuntimeArgs() {

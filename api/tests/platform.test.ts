@@ -33,8 +33,10 @@ test("downloads only the source stream needed for the selected output", () => {
 });
 
 test("configures the pinned PO token provider used by the runtime image", () => {
-  assert.deepEqual(getYtDlpRuntimeArgs().slice(-2), [
+  assert.deepEqual(getYtDlpRuntimeArgs().slice(-4), [
     "--extractor-args",
     "youtubepot-bgutilscript:server_home=/opt/bgutil-ytdlp-pot-provider/server",
+    "--extractor-args",
+    "youtube:player_client=mweb",
   ]);
 });
