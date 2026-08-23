@@ -55,9 +55,12 @@ test("ships the converter interaction and branded styling without a framework ru
 
 test("contains a current GitHub Pages deployment workflow", async () => {
   const workflow = await read(".github/workflows/deploy-pages.yml");
+  const smokeWorkflow = await read(".github/workflows/api-smoke.yml");
 
   assert.match(workflow, /actions\/configure-pages@v5/);
   assert.match(workflow, /actions\/upload-pages-artifact@v4/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
   assert.match(workflow, /path: _site/);
+  assert.doesNotMatch(smokeWorkflow, /\/api\/uploads|--form\s+"file=/);
+  assert.match(smokeWorkflow, /\/api\/jobs/);
 });
