@@ -18,6 +18,33 @@ function readOrigins() {
   );
 }
 
+const supportedProxyProtocols = new Set([
+  "http:",
+  "https:",
+  "socks4:",
+  "socks4a:",
+  "socks5:",
+  "socks5h:",
+]);
+
+export function readYtDlpProxyUrl(value = process.env.YTDLP_PROXY_URL) {
+  const normalized = value?.trim();
+  if (!normalized) return null;
+
+  let proxyUrl: URL;
+  try {
+    proxyUrl = new URL(normalized);
+  } catch {
+    throw new Error("YTDLP_PROXY_URL precisa ser uma URL de proxy válida.");
+  }
+
+  if (!supportedProxyProtocols.has(proxyUrl.protocol) || !proxyUrl.hostname) {
+    throw new Error("YTDLP_PROXY_URL aceita somente proxies HTTP, HTTPS ou SOCKS.");
+  }
+
+  return normalized;
+}
+
 export const config = {
   host: process.env.HOST ?? "0.0.0.0",
   port: readPositiveInteger("PORT", 8787),
@@ -28,4 +55,5 @@ export const config = {
   downloadTimeoutMs: readPositiveInteger("DOWNLOAD_TIMEOUT_MS", 2 * 60 * 1000),
   conversionTimeoutMs: readPositiveInteger("CONVERSION_TIMEOUT_MS", 10 * 60 * 1000),
   jobTtlMs: readPositiveInteger("JOB_TTL_MS", 15 * 60 * 1000),
+  ytDlpProxyUrl: readYtDlpProxyUrl(),
 };

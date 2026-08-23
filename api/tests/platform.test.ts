@@ -40,3 +40,9 @@ test("configures the pinned PO token provider used by the runtime image", () => 
     "youtube:player_client=mweb",
   ]);
 });
+
+test("passes the configured outbound proxy only to yt-dlp", () => {
+  const proxyUrl = "socks5://user:password@proxy.example:1080";
+  assert.deepEqual(getYtDlpRuntimeArgs(proxyUrl).slice(-2), ["--proxy", proxyUrl]);
+  assert.equal(getYtDlpRuntimeArgs(null).includes("--proxy"), false);
+});

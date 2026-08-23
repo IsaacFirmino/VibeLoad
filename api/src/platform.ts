@@ -30,8 +30,10 @@ const ytDlpRuntimeArgs = [
   "youtube:player_client=mweb",
 ];
 
-export function getYtDlpRuntimeArgs() {
-  return [...ytDlpRuntimeArgs];
+export function getYtDlpRuntimeArgs(proxyUrl = config.ytDlpProxyUrl) {
+  const args = [...ytDlpRuntimeArgs];
+  if (proxyUrl) args.push("--proxy", proxyUrl);
+  return args;
 }
 
 const videoQualityHeights: Record<string, number> = {
@@ -126,7 +128,7 @@ export async function inspectPlatformMedia(value: string) {
   if (!platform) return null;
 
   const output = await runYtDlp([
-    ...ytDlpRuntimeArgs,
+    ...getYtDlpRuntimeArgs(),
     "--dump-single-json",
     "--skip-download",
     "--no-playlist",
@@ -181,7 +183,7 @@ export async function downloadPlatformMedia(
   const outputTemplate = join(directory, `${outputPrefix}.%(ext)s`);
 
   await runYtDlp([
-    ...ytDlpRuntimeArgs,
+    ...getYtDlpRuntimeArgs(),
     "--no-playlist",
     "--no-warnings",
     "--no-progress",

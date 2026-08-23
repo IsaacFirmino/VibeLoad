@@ -35,6 +35,8 @@ As solicitações de análise e conversão precisam enviar `consent: true`.
 
 O arquivo `render.yaml` na raiz configura um serviço Docker com FFmpeg. Conecte o repositório como um Blueprint no Render e confirme que o endereço final da API corresponde ao valor de `vibeload-api-url` em `index.html`.
 
-O serviço aceita somente URLs HTTP ou HTTPS diretas de arquivos de áudio ou vídeo. URLs privadas, portas alternativas, credenciais embutidas, arquivos acima do limite e tipos incompatíveis são recusados.
+Para encaminhar os acessos das plataformas por outro IP, cadastre `YTDLP_PROXY_URL` como variável secreta no Render. São aceitos proxies HTTP, HTTPS e SOCKS, inclusive com autenticação na própria URL, por exemplo `socks5://usuario:senha@proxy.example:1080`. Caracteres especiais do usuário ou da senha precisam estar codificados para URL. O valor é usado somente pelo yt-dlp durante a análise e o download de links de plataformas.
+
+O serviço aceita URLs HTTP ou HTTPS diretas de arquivos de áudio ou vídeo e links públicos das plataformas compatíveis. URLs privadas, portas alternativas, credenciais embutidas, arquivos acima do limite e tipos incompatíveis são recusados.
 
 Não use o serviço para contornar DRM, autenticação, restrições de plataforma ou direitos autorais.

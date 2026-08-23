@@ -23,3 +23,5 @@ services:
         value: "600000"
       - key: JOB_TTL_MS
         value: "900000"
+      - key: YTDLP_PROXY_URL
+        sync: false
